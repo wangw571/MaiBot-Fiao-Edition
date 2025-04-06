@@ -9,7 +9,7 @@ from ..models.utils_model import LLM_request
 from .config import global_config
 from .message import MessageRecv, MessageThinking, Message
 from .prompt_builder import prompt_builder
-from .utils import process_llm_response
+from .utils import process_llm_response, is_mentioned_bot_in_message
 from src.common.logger import get_module_logger, LogConfig, LLM_STYLE_CONFIG
 
 # 定义日志配置
@@ -29,13 +29,13 @@ class ResponseGenerator:
     def __init__(self):
         self.model_r1 = LLM_request(
             model=global_config.llm_reasoning,
-            temperature=0.7,
+            temperature=0.75,
             max_tokens=1000,
             stream=True,
         )
-        self.model_v3 = LLM_request(model=global_config.llm_normal, temperature=0.7, max_tokens=3000)
-        self.model_r1_distill = LLM_request(model=global_config.llm_reasoning_minor, temperature=0.7, max_tokens=3000)
-        self.model_v25 = LLM_request(model=global_config.llm_normal_minor, temperature=0.7, max_tokens=3000)
+        self.model_v3 = LLM_request(model=global_config.llm_normal, temperature=0.75, max_tokens=3000)
+        self.model_r1_distill = LLM_request(model=global_config.llm_reasoning_minor, temperature=0.75, max_tokens=3000)
+        self.model_v25 = LLM_request(model=global_config.llm_normal_minor, temperature=0.75, max_tokens=3000)
         self.current_model_type = "r1"  # 默认使用 R1
 
     async def generate_response(self, message: MessageThinking) -> Optional[Union[str, List[str]]]:
@@ -81,11 +81,17 @@ class ResponseGenerator:
             sender_name = f"用户({message.chat_stream.user_info.user_id})"
 
         # 构建prompt
+        is_bot_mentioned = True
+        try:
+            is_bot_mentioned = is_mentioned_bot_in_message(message) or (message.group_info is None and message.group_info.group_id == -1)
+        except Exception as e:
+            pass
         prompt, prompt_check = await prompt_builder._build_prompt(
             message.chat_stream,
             message_txt=message.processed_plain_text,
             sender_name=sender_name,
             stream_id=message.chat_stream.stream_id,
+            is_mentioned=is_bot_mentioned,
         )
 
         # 读空气模块 简化逻辑，先停用
@@ -207,9 +213,9 @@ class ResponseGenerator:
 
 class InitiativeMessageGenerate:
     def __init__(self):
-        self.model_r1 = LLM_request(model=global_config.llm_reasoning, temperature=0.7)
-        self.model_v3 = LLM_request(model=global_config.llm_normal, temperature=0.7)
-        self.model_r1_distill = LLM_request(model=global_config.llm_reasoning_minor, temperature=0.7)
+        self.model_r1 = LLM_request(model=global_config.llm_reasoning, temperature=0.75)
+        self.model_v3 = LLM_request(model=global_config.llm_normal, temperature=0.75)
+        self.model_r1_distill = LLM_request(model=global_config.llm_reasoning_minor, temperature=0.75)
 
     def gen_response(self, message: Message):
         topic_select_prompt, dots_for_select, prompt_template = prompt_builder._build_initiative_prompt_select(
