@@ -66,6 +66,8 @@ class WillingManager:
             if chat_stream.group_info.group_id in config.talk_frequency_down_groups:
                 reply_probability = reply_probability / config.down_frequency_rate
 
+        reply_probability += 10 if is_mentioned_bot else 0
+
         return reply_probability
 
     def change_reply_willing_sent(self, chat_stream: ChatStream):

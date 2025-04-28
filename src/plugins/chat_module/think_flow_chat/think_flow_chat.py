@@ -211,7 +211,7 @@ class ThinkFlowChat:
                 logger.info("触发缓冲，已炸飞消息列")
             return
 
-        is_mentioned = is_mentioned_bot_in_message(message)
+        is_mentioned = is_mentioned_bot_in_message(message) or (message.message_info.group_info is None)
 
 
         # 计算回复意愿
