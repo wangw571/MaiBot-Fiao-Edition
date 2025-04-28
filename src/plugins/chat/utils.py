@@ -334,13 +334,13 @@ def process_llm_response(text: str) -> List[str]:
     # 对清理后的文本进行进一步处理
     max_length = global_config.response_max_length * 2
     max_sentence_num = global_config.response_max_sentence_num
-    if len(cleaned_text) > max_length and not is_western_paragraph(cleaned_text):
-        logger.warning(f"回复过长 ({len(cleaned_text)} 字符)，返回默认回复")
-        return ["懒得说"]
-    elif len(cleaned_text) > 200:
-        logger.warning(f"回复过长 ({len(cleaned_text)} 字符)，返回默认回复")
-        return ["懒得说"]
-
+    # if len(cleaned_text) > max_length and not is_western_paragraph(cleaned_text):
+    #     logger.warning(f"回复过长 ({len(cleaned_text)} 字符)，返回默认回复")
+    #     return ["懒得说"]
+    # elif len(text) > 200:
+    #     logger.warning(f"回复过长 ({len(text)} 字符)，返回默认回复")
+    #     return ["懒得说"]
+    # 处理长消息
     typo_generator = ChineseTypoGenerator(
         error_rate=global_config.chinese_typo_error_rate,
         min_freq=global_config.chinese_typo_min_freq,
@@ -363,9 +363,9 @@ def process_llm_response(text: str) -> List[str]:
         else:
             sentences.append(sentence)
 
-    if len(sentences) > max_sentence_num:
-        logger.warning(f"分割后消息数量过多 ({len(sentences)} 条)，返回默认回复")
-        return [f"{global_config.BOT_NICKNAME}不知道哦"]
+    # if len(sentences) > 3:
+    #     logger.warning(f"分割后消息数量过多 ({len(sentences)} 条)，返回默认回复")
+    #     return [f"{global_config.BOT_NICKNAME}不知道哦"]
 
     # sentences.extend(extracted_contents)
 
